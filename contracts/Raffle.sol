@@ -14,8 +14,8 @@ contract Raffle is ERC721URIStorage, Ownable {
     Counters.Counter private _tokenIds;
     Counters.Counter public totalSupply;
     bool public saleIsActive = false;
-    uint256 public rafflePrice = 0.08 ether; //0.08 ETH
-    uint256[] public rafflesInPlay;
+    uint256 public ticketPrice = 0.08 ether; //0.08 ETH
+    uint256[] public ticketsInPlay;
 
     constructor() ERC721("Raffle", "RFL") {}
 
@@ -23,30 +23,30 @@ contract Raffle is ERC721URIStorage, Ownable {
         saleIsActive = !saleIsActive;
     }
 
-    function mintRaffle(string memory tokenURI, uint256 numberOfRaffels)
+    function mintTicket(string memory tokenURI, uint256 numberOfTickets)
         public
         payable
     {
-        require(saleIsActive, "Sale must be active to mint Ape");
+        require(saleIsActive, "Sale must be active to mint Raffle Ticket");
         require(
-            rafflePrice.mul(numberOfRaffels) <= msg.value,
+            ticketPrice.mul(numberOfTickets) <= msg.value,
             "Ether value sent is not correct"
         );
-        for (uint256 i = 0; i < numberOfRaffels; i++) {
+        for (uint256 i = 0; i < numberOfTickets; i++) {
             _tokenIds.increment();
             totalSupply.increment();
 
             uint256 newItemId = _tokenIds.current();
             _mint(msg.sender, newItemId);
             _setTokenURI(newItemId, tokenURI);
-            rafflesInPlay.push(newItemId);
+            ticketsInPlay.push(newItemId);
         }
     }
 
     function startRound() public onlyOwner {
         saleIsActive = true;
         totalSupply.reset();
-        delete rafflesInPlay;
+        delete ticketsInPlay;
     }
 
     function _randomNumber(string memory nonce)
@@ -66,22 +66,20 @@ contract Raffle is ERC721URIStorage, Ownable {
     function _remove(uint256 _index) private {
         require(_index < rafflesInPlay.length, "index out of bound");
 
-        for (uint256 i = _index; i < rafflesInPlay.length - 1; i++) {
-            rafflesInPlay[i] = rafflesInPlay[i + 1];
-        }
+        rafflesInPlay[_index] = rafflesInPlay[rafflesInPlay.length-1];
         rafflesInPlay.pop();
     }
 
     function burn(string memory nonce, uint256 numberToBurn) public onlyOwner {
         require(!saleIsActive, "Sale is active, wait until it stops");
-        require(totalSupply.current() > 1, "Supply is under 2 raffles");
-        require(numberToBurn > 0, "Number to Burn is under 1 raffle");
+        require(totalSupply.current() > 1, "Supply is under 2 tickets");
+        require(numberToBurn > 0, "Number to Burn is under 1 ticket");
         uint256 remaining = totalSupply.current() - numberToBurn;
         while (totalSupply.current() > remaining) {
             uint256 index = _randomNumber(nonce);
-            uint256 raffleId = rafflesInPlay[index];
+            uint256 ticketId = ticketsInPlay[index];
             _remove(index);
-            _burn(raffleId);
+            _burn(ticketId);
             totalSupply.decrement();
         }
     }
@@ -95,8 +93,8 @@ contract Raffle is ERC721URIStorage, Ownable {
 
     function transferToWinner(address addr) public onlyOwner {}
 
-    function setRafflePrice(uint256 price) public onlyOwner {
-        rafflePrice = price;
+    function setTicketPrice(uint256 price) public onlyOwner {
+        ticketPrice = price;
     }
 
     receive() external payable {}
