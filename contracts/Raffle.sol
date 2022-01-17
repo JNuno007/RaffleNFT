@@ -64,12 +64,10 @@ contract Raffle is ERC721URIStorage, Ownable {
     }
 
     function _remove(uint256 _index) private {
-        require(_index < ticketsInPlay.length, "index out of bound");
+        require(_index < rafflesInPlay.length, "index out of bound");
 
-        for (uint256 i = _index; i < ticketsInPlay.length - 1; i++) {
-            ticketsInPlay[i] = ticketsInPlay[i + 1];
-        }
-        ticketsInPlay.pop();
+        rafflesInPlay[_index] = rafflesInPlay[rafflesInPlay.length-1];
+        rafflesInPlay.pop();
     }
 
     function burn(string memory nonce, uint256 numberToBurn) public onlyOwner {
