@@ -14,7 +14,8 @@ contract Raffle is ERC721URIStorage, Ownable {
     Counters.Counter private _tokenIds;
     Counters.Counter public totalSupply;
     bool public saleIsActive = false;
-    uint256 public constant rafflePrice = 0.08 ether; //0.08 ETH
+    uint256 public rafflePrice = 0.08 ether; //0.08 ETH
+    uint256[] public rafflesInPlay;
 
     constructor() ERC721("Raffle", "RFL") {}
 
@@ -22,10 +23,10 @@ contract Raffle is ERC721URIStorage, Ownable {
         saleIsActive = !saleIsActive;
     }
 
-    function mintRaffle(
-        string memory tokenURI,
-        uint256 numberOfRaffels
-    ) public payable {
+    function mintRaffle(string memory tokenURI, uint256 numberOfRaffels)
+        public
+        payable
+    {
         require(saleIsActive, "Sale must be active to mint Ape");
         require(
             rafflePrice.mul(numberOfRaffels) <= msg.value,
@@ -38,18 +39,22 @@ contract Raffle is ERC721URIStorage, Ownable {
             uint256 newItemId = _tokenIds.current();
             _mint(msg.sender, newItemId);
             _setTokenURI(newItemId, tokenURI);
+            rafflesInPlay.push(newItemId);
         }
     }
 
     function startRound() public onlyOwner {
         saleIsActive = true;
         totalSupply.reset();
+        delete rafflesInPlay;
     }
 
-    function burn(string memory nonce, uint256 numberToBurn) public view onlyOwner returns (uint256) {
-        require(!saleIsActive, "Sale is active, wait until it stops");
-        require(totalSupply.current() > 1, "Supply is under 2 raffles");
-        require(numberToBurn > 1, "Number to Burn is under 1 raffle");
+    function _randomNumber(string memory nonce)
+        private
+        view
+        onlyOwner
+        returns (uint256)
+    {
         return
             uint256(
                 keccak256(
@@ -57,4 +62,42 @@ contract Raffle is ERC721URIStorage, Ownable {
                 )
             ) % totalSupply.current();
     }
+
+    function _remove(uint256 _index) private {
+        require(_index < rafflesInPlay.length, "index out of bound");
+
+        for (uint256 i = _index; i < rafflesInPlay.length - 1; i++) {
+            rafflesInPlay[i] = rafflesInPlay[i + 1];
+        }
+        rafflesInPlay.pop();
+    }
+
+    function burn(string memory nonce, uint256 numberToBurn) public onlyOwner {
+        require(!saleIsActive, "Sale is active, wait until it stops");
+        require(totalSupply.current() > 1, "Supply is under 2 raffles");
+        require(numberToBurn > 0, "Number to Burn is under 1 raffle");
+        uint256 remaining = totalSupply.current() - numberToBurn;
+        while (totalSupply.current() > remaining) {
+            uint256 index = _randomNumber(nonce);
+            uint256 raffleId = rafflesInPlay[index];
+            _remove(index);
+            _burn(raffleId);
+            totalSupply.decrement();
+        }
+    }
+
+    function giveWinnerTokenURI(uint256 tokenId, string memory tokenURI)
+        public
+        onlyOwner
+    {
+        _setTokenURI(tokenId, tokenURI);
+    }
+
+    function transferToWinner(address addr) public onlyOwner {}
+
+    function setRafflePrice(uint256 price) public onlyOwner {
+        rafflePrice = price;
+    }
+
+    receive() external payable {}
 }

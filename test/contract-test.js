@@ -13,7 +13,7 @@ describe("Deployment", function () {
     // mined.
     hardhatRaffle = await Raffle.deploy();
   });
-  it("Contract assign to the owner", async function () {
+  it("Contract should be assigned to the owner", async function () {
     expect(await hardhatRaffle.owner()).to.equal(owner.address);
   });
   it("Contract should start with sales closed", async function () {
@@ -45,5 +45,36 @@ describe("Transactions", function () {
     });
     const numMinted = await hardhatRaffle.totalSupply();
     assert(numMinted.eq(BigNumber.from(2)));
+  });
+});
+
+
+describe("Burn Process", function () {
+  beforeEach(async function () {
+    // Get the ContractFactory and Signers here.
+    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    Raffle = await ethers.getContractFactory("Raffle", owner);
+
+    // To deploy our contract, we just have to call Token.deploy() and await
+    // for it to be deployed(), which happens once its transaction has been
+    // mined.
+    hardhatRaffle = await Raffle.deploy();
+    await hardhatRaffle.changeContractState();
+    rafflePrice = await hardhatRaffle.rafflePrice();
+    // console.log(
+    //   "Owner balance: ",
+    //   await hardhatRaffle.provider.getBalance(owner.address),
+    // );
+    await hardhatRaffle.connect(addr1).mintRaffle("test", 101, {
+      from: addr1.address,
+      value: ethers.utils.parseEther("8.08"),
+    });
+    await hardhatRaffle.changeContractState();
+  });
+  
+  it("Total supply must decrease and token should be burnt", async function () {
+    await hardhatRaffle.connect(owner).burn("test", 50);
+    const totalSup = await hardhatRaffle.totalSupply();
+    assert(totalSup.eq(BigNumber.from(51)));
   });
 });
