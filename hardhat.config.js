@@ -6,20 +6,20 @@ require("@nomiclabs/hardhat-ethers");
 const { API_URL, PRIVATE_KEY } = process.env;
 module.exports = {
   solidity: "0.8.3",
-  // defaultNetwork: "hardhat",
-  // networks: {
-  //    hardhat: {},
-  //    // ropsten: {
-  //    //    url: API_URL,
-  //    //    accounts: [`0x${PRIVATE_KEY}`]
-  //    // }
-  // },
-  defaultNetwork: "ganache",
+  defaultNetwork: "hardhat",
   networks: {
-    ganache: {
-      gasLimit: 6000000000,
-      defaultBalanceEther: 10,
-      url: "http://localhost:7545"
-    },
+     hardhat: {},
+     // ropsten: {
+     //    url: API_URL,
+     //    accounts: [`0x${PRIVATE_KEY}`]
+     // }
   },
+  // defaultNetwork: "ganache",
+  // networks: {
+  //   ganache: {
+  //     gasLimit: 6000000000,
+  //     defaultBalanceEther: 10,
+  //     url: "http://localhost:7545"
+  //   },
+  // },
 };

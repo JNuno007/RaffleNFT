@@ -16,6 +16,8 @@ contract Raffle is ERC721URIStorage, Ownable {
     bool public saleIsActive = false;
     uint256 public ticketPrice = 0.08 ether; //0.08 ETH
     uint256[] public ticketsInPlay;
+    uint256 public prizeMoney;
+    string commonMetaData;
 
     constructor() ERC721("Raffle", "RFL") {}
 
@@ -23,11 +25,16 @@ contract Raffle is ERC721URIStorage, Ownable {
         saleIsActive = !saleIsActive;
     }
 
-    function mintTicket(string memory tokenURI, uint256 numberOfTickets)
+    function setMetaData(string memory tokenURI) public onlyOwner{
+        commonMetaData = tokenURI;
+    }
+
+    function mintTicket(uint256 numberOfTickets)
         public
         payable
     {
         require(saleIsActive, "Sale must be active to mint Raffle Ticket");
+        require(numberOfTickets > 0, "Mint number must be above 0");
         require(
             ticketPrice.mul(numberOfTickets) <= msg.value,
             "Ether value sent is not correct"
@@ -38,15 +45,17 @@ contract Raffle is ERC721URIStorage, Ownable {
 
             uint256 newItemId = _tokenIds.current();
             _mint(msg.sender, newItemId);
-            _setTokenURI(newItemId, tokenURI);
+            _setTokenURI(newItemId, commonMetaData);
             ticketsInPlay.push(newItemId);
         }
+        prizeMoney += ticketPrice.mul(numberOfTickets);
     }
 
     function startRound() public onlyOwner {
         saleIsActive = true;
         totalSupply.reset();
         delete ticketsInPlay;
+        prizeMoney = 0;
     }
 
     function _randomNumber(string memory nonce)
@@ -64,10 +73,9 @@ contract Raffle is ERC721URIStorage, Ownable {
     }
 
     function _remove(uint256 _index) private {
-        require(_index < rafflesInPlay.length, "index out of bound");
-
-        rafflesInPlay[_index] = rafflesInPlay[rafflesInPlay.length-1];
-        rafflesInPlay.pop();
+        require(_index < ticketsInPlay.length, "index out of bound");
+        ticketsInPlay[_index] = ticketsInPlay[ticketsInPlay.length-1];
+        ticketsInPlay.pop();
     }
 
     function burn(string memory nonce, uint256 numberToBurn) public onlyOwner {
@@ -91,7 +99,13 @@ contract Raffle is ERC721URIStorage, Ownable {
         _setTokenURI(tokenId, tokenURI);
     }
 
-    function transferToWinner(address addr) public onlyOwner {}
+    function transferToWinner() public payable onlyOwner {
+        require(ticketsInPlay.length == 1, "There is more than 1 ticket left to win");
+        address winner = ownerOf(ticketsInPlay[0]);
+        //Send winning prize to address;
+        (bool success, ) = winner.call{value: prizeMoney}("");
+        require(success, "Failed to send Ether");
+    }
 
     function setTicketPrice(uint256 price) public onlyOwner {
         ticketPrice = price;
