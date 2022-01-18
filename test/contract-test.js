@@ -32,14 +32,14 @@ describe("Transactions", function () {
     // mined.
     hardhatRaffle = await Raffle.deploy();
     await hardhatRaffle.changeContractState();
-    rafflePrice = await hardhatRaffle.rafflePrice();
+    rafflePrice = await hardhatRaffle.ticketPrice();
     // console.log(
     //   "Owner balance: ",
     //   await hardhatRaffle.provider.getBalance(owner.address),
     // );
   });
   it("Mint a number of raffles in one transaction from address one", async function () {
-    await hardhatRaffle.connect(addr1).mintRaffle("test", 2, {
+    await hardhatRaffle.connect(addr1).mintTicket(2, {
       from: addr1.address,
       value: ethers.utils.parseEther("0.16"),
     });
@@ -60,12 +60,12 @@ describe("Burn Process", function () {
     // mined.
     hardhatRaffle = await Raffle.deploy();
     await hardhatRaffle.changeContractState();
-    rafflePrice = await hardhatRaffle.rafflePrice();
+    rafflePrice = await hardhatRaffle.ticketPrice();
     // console.log(
     //   "Owner balance: ",
     //   await hardhatRaffle.provider.getBalance(owner.address),
     // );
-    await hardhatRaffle.connect(addr1).mintRaffle("test", 101, {
+    await hardhatRaffle.connect(addr1).mintTicket(101, {
       from: addr1.address,
       value: ethers.utils.parseEther("8.08"),
     });
@@ -77,4 +77,13 @@ describe("Burn Process", function () {
     const totalSup = await hardhatRaffle.totalSupply();
     assert(totalSup.eq(BigNumber.from(51)));
   });
+
+  it("A winner must be set and get the prize money", async function () {
+    const beforeBalance = await addr1.getBalance()
+    await hardhatRaffle.connect(owner).burn("test", 100);
+    await hardhatRaffle.transferToWinner();
+    const afterBalance = await addr1.getBalance();
+    const diff = afterBalance.sub(beforeBalance)
+    assert(diff.eq(ethers.utils.parseEther("8.08")));
+  })
 });
