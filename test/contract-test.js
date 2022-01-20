@@ -46,8 +46,25 @@ describe("Transactions", function () {
     const numMinted = await hardhatRaffle.totalSupply();
     assert(numMinted.eq(BigNumber.from(2)));
   });
-});
 
+  it("Start new Round", async function () {
+    await hardhatRaffle.connect(owner).startRound();
+    const saleIsActive = await hardhatRaffle.saleIsActive();
+    assert(saleIsActive === true, "SaleIsActive is false");
+    const prizeMoney = await hardhatRaffle.prizeMoney();
+    assert(prizeMoney.eq(BigNumber.from(0)), "Prize Money is bigger than 0");
+    const totalSupply = await hardhatRaffle.totalSupply();
+    assert(totalSupply.eq(BigNumber.from(0)), "Total Supply bigger than 0");
+    const ticketsInPlay = await hardhatRaffle.getTicketsInPlaySize();
+    assert(ticketsInPlay.eq(BigNumber.from(0)));
+  });
+
+  it("Set Ticket Price", async function () {
+    await hardhatRaffle.connect(owner).setTicketPrice(ethers.utils.parseEther("0.10"));
+    const ticketPrice = await hardhatRaffle.ticketPrice();
+    assert(ticketPrice.eq(BigNumber.from(ethers.utils.parseEther("0.1"))))
+  })
+});
 
 describe("Burn Process", function () {
   beforeEach(async function () {
@@ -71,7 +88,7 @@ describe("Burn Process", function () {
     });
     await hardhatRaffle.changeContractState();
   });
-  
+
   it("Total supply must decrease and token should be burnt", async function () {
     await hardhatRaffle.connect(owner).burn("test", 50);
     const totalSup = await hardhatRaffle.totalSupply();
@@ -79,11 +96,11 @@ describe("Burn Process", function () {
   });
 
   it("A winner must be set and get the prize money", async function () {
-    const beforeBalance = await addr1.getBalance()
+    const beforeBalance = await addr1.getBalance();
     await hardhatRaffle.connect(owner).burn("test", 100);
     await hardhatRaffle.transferToWinner();
     const afterBalance = await addr1.getBalance();
-    const diff = afterBalance.sub(beforeBalance)
+    const diff = afterBalance.sub(beforeBalance);
     assert(diff.eq(ethers.utils.parseEther("8.08")));
-  })
+  });
 });

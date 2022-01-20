@@ -102,13 +102,16 @@ contract Raffle is ERC721URIStorage, Ownable {
     function transferToWinner() public payable onlyOwner {
         require(ticketsInPlay.length == 1, "There is more than 1 ticket left to win");
         address winner = ownerOf(ticketsInPlay[0]);
-        //Send winning prize to address;
         (bool success, ) = winner.call{value: prizeMoney}("");
         require(success, "Failed to send Ether");
     }
 
     function setTicketPrice(uint256 price) public onlyOwner {
         ticketPrice = price;
+    }
+
+    function getTicketsInPlaySize() public view returns(uint256 count) {
+        return ticketsInPlay.length;
     }
 
     receive() external payable {}
