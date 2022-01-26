@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/security/PullPayment.sol";
 
-contract Raffle is ERC721URIStorage, Ownable {
+contract Ticket is ERC721URIStorage, Ownable, PullPayment {
     using Counters for Counters.Counter;
     using SafeMath for uint256;
     Counters.Counter private _tokenIds;
@@ -19,20 +20,17 @@ contract Raffle is ERC721URIStorage, Ownable {
     uint256 public prizeMoney;
     string commonMetaData;
 
-    constructor() ERC721("Raffle", "RFL") {}
+    constructor() ERC721("Ticket", "TCK") {}
 
     function changeContractState() public onlyOwner {
         saleIsActive = !saleIsActive;
     }
 
-    function setMetaData(string memory tokenURI) public onlyOwner{
+    function setMetaData(string memory tokenURI) public onlyOwner {
         commonMetaData = tokenURI;
     }
 
-    function mintTicket(uint256 numberOfTickets)
-        public
-        payable
-    {
+    function mintTicket(uint256 numberOfTickets) public payable {
         require(saleIsActive, "Sale must be active to mint Raffle Ticket");
         require(numberOfTickets > 0, "Mint number must be above 0");
         require(
@@ -58,7 +56,7 @@ contract Raffle is ERC721URIStorage, Ownable {
         prizeMoney = 0;
     }
 
-    function _randomNumber(string memory nonce)
+    function _randomNumber(uint256 _nonce, uint256 _salt)
         private
         view
         onlyOwner
@@ -67,24 +65,24 @@ contract Raffle is ERC721URIStorage, Ownable {
         return
             uint256(
                 keccak256(
-                    abi.encodePacked(block.difficulty, block.timestamp, nonce)
+                    abi.encodePacked(block.difficulty, block.timestamp, _nonce, _salt)
                 )
             ) % totalSupply.current();
     }
 
     function _remove(uint256 _index) private {
         require(_index < ticketsInPlay.length, "index out of bound");
-        ticketsInPlay[_index] = ticketsInPlay[ticketsInPlay.length-1];
+        ticketsInPlay[_index] = ticketsInPlay[ticketsInPlay.length - 1];
         ticketsInPlay.pop();
     }
 
-    function burn(string memory nonce, uint256 numberToBurn) public onlyOwner {
+    function burn(uint256 _salt, uint256 _nonce, uint256 numberToBurn) public onlyOwner {
         require(!saleIsActive, "Sale is active, wait until it stops");
         require(totalSupply.current() > 1, "Supply is under 2 tickets");
         require(numberToBurn > 0, "Number to Burn is under 1 ticket");
         uint256 remaining = totalSupply.current() - numberToBurn;
         while (totalSupply.current() > remaining) {
-            uint256 index = _randomNumber(nonce);
+            uint256 index = _randomNumber(_nonce, _salt);
             uint256 ticketId = ticketsInPlay[index];
             _remove(index);
             _burn(ticketId);
@@ -100,7 +98,11 @@ contract Raffle is ERC721URIStorage, Ownable {
     }
 
     function transferToWinner() public payable onlyOwner {
-        require(ticketsInPlay.length == 1, "There is more than 1 ticket left to win");
+        require(!saleIsActive, "Sale is active, wait until it stops");
+        require(
+            ticketsInPlay.length == 1,
+            "There is more than 1 ticket left to win"
+        );
         address winner = ownerOf(ticketsInPlay[0]);
         (bool success, ) = winner.call{value: prizeMoney}("");
         require(success, "Failed to send Ether");
@@ -110,8 +112,17 @@ contract Raffle is ERC721URIStorage, Ownable {
         ticketPrice = price;
     }
 
-    function getTicketsInPlaySize() public view returns(uint256 count) {
+    function getTicketsInPlaySize() public view returns (uint256 count) {
         return ticketsInPlay.length;
+    }
+
+    function withdrawPayments(address payable payee)
+        public
+        virtual
+        override
+        onlyOwner
+    {
+        super.withdrawPayments(payee);
     }
 
     receive() external payable {}
