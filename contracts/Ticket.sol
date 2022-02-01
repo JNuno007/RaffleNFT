@@ -106,6 +106,7 @@ contract Ticket is ERC721URIStorage, Ownable, PullPayment {
         address winner = ownerOf(ticketsInPlay[0]);
         (bool success, ) = winner.call{value: prizeMoney}("");
         require(success, "Failed to send Ether");
+        prizeMoney = 0 ether;
     }
 
     function setTicketPrice(uint256 price) public onlyOwner {
