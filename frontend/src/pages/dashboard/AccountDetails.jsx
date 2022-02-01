@@ -1,10 +1,11 @@
+/* eslint-disable react/prop-types */
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 
 export default function AccountDetails(props) {
   const [balance, setBalance] = useState(0);
   // eslint-disable-next-line react/prop-types
-  const { account } = props;
+  const { account, network } = props;
 
   const getBalance = async (acc) => {
     const accBalance = await window.ethereum.request({ method: 'eth_getBalance', params: [acc, 'latest'] });
@@ -34,6 +35,15 @@ export default function AccountDetails(props) {
           {balance}
           {' '}
           ETH
+        </span>
+      </span>
+      <br />
+      <br />
+      <span>
+        <strong>Network:</strong>
+        {' '}
+        <span>
+          {network.toUpperCase()}
         </span>
       </span>
     </div>

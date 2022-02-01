@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -5,15 +6,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: ['babel-polyfill', path.join(__dirname, 'src', 'index.jsx')],
   output: { path: path.join(__dirname, 'build'), filename: 'index.bundle.js' },
-  mode: process.env.NODE_ENV || 'development',
   resolve: {
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     fallback: {
       fs: false,
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      events: require.resolve('events/'),
     },
     extensions: ['*', '.js', '.jsx'],
   },
-  devServer: { static: path.join(__dirname, 'src') },
   module: {
     rules: [
       {

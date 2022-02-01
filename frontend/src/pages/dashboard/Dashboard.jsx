@@ -1,26 +1,21 @@
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
-import { abi, address } from '../../contract/contract';
 import AccountDetails from './AccountDetails';
 import ContractDetails from './ContractDetails';
 
 export default function Dashboard() {
   const [account, setAccount] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [network, setNetwork] = useState('');
 
   const provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-
-  const isMetaMaskConnected = async () => {
-    const { ethereum } = window;
-    const accounts = await ethereum.request({ method: 'eth_accounts' });
-    setIsConnected(accounts && accounts.length > 0);
-  };
 
   const getAccount = async () => {
     const [adr] = await window.ethereum.request({
       method: 'eth_requestAccounts',
     });
     setAccount(adr);
+    setNetwork(provider.network.name);
     setIsConnected(true);
   };
 
@@ -46,12 +41,6 @@ export default function Dashboard() {
       }
     });
 
-    // window.ethereum.on('connect', () => {
-    //   console.log('Connected');
-    //   setIsConnected(true);
-    //   getAccount();
-    // });
-
     window.ethereum.on('disconnect', () => {
       setIsConnected(false);
       setAccount(null);
@@ -64,6 +53,7 @@ export default function Dashboard() {
 
   return (
     <div>
+      <h2>Check that your Metamask account is set to Rinkeby Network!</h2>
       {!account && (
         <button onClick={getAccount} type="button">
           Connect Wallet
@@ -71,7 +61,7 @@ export default function Dashboard() {
       )}
       {!isConnected ? <h4>No wallet connected</h4> : (
         <>
-          <AccountDetails account={account} />
+          <AccountDetails account={account} network={network} />
           <ContractDetails account={account} provider={provider} />
         </>
       )}
