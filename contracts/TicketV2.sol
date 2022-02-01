@@ -50,13 +50,13 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
             currentStage = Stage.BURN;
             if (totalSupply.current() >= 20) {
                 if (totalSupply.current() % 2 == 0) {
-                    burn(_salt, _nonce, totalSupply.current() / 2);
+                    _burn(_salt, _nonce, totalSupply.current() / 2);
                 } else {
                     uint256 numberToBurn = (totalSupply.current() - 1);
-                    burn(_salt, _nonce, (numberToBurn / 2) + 1);
+                    _burn(_salt, _nonce, (numberToBurn / 2) + 1);
                 }
             } else if (totalSupply.current() > 10) {
-                burn(_salt, _nonce, totalSupply.current() - 10);
+                _burn(_salt, _nonce, totalSupply.current() - 10);
             } else {
                 if (totalSupply.current() == 0) {
                     currentStage = Stage.MINT;
@@ -65,7 +65,7 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
                     winnerTokenURI[ticketsInPlay[0]] = winnerMetaData;
                     currentStage = Stage.END;
                 } else {
-                    burn(_salt, _nonce, 1);
+                    _burn(_salt, _nonce, 1);
                 }
             }
         }
@@ -86,11 +86,11 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
         prizeMoney = 0;
     }
 
-    function burn(
+    function _burn(
         uint256 _salt,
         uint256 _nonce,
         uint256 numberToBurn
-    ) public onlyOwner {
+    ) private onlyOwner{
         require(totalSupply.current() > 1, "Supply is under 2 tickets");
         require(numberToBurn > 0, "Number to Burn is under 1 ticket");
         uint256 remaining = totalSupply.current() - numberToBurn;
