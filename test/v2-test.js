@@ -94,6 +94,30 @@ describe("Burn Phase", () => {
   });
 })
 
+describe("Odd Numbers on Burn Phase", () => {
+  beforeEach(async function () {
+    // Get the ContractFactory and Signers here.
+    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    Ticket = await ethers.getContractFactory("TicketV2", owner);
+
+    // To deploy our contract, we just have to call Token.deploy() and await
+    // for it to be deployed(), which happens once its transaction has been
+    // mined.
+    hardhatTicket = await Ticket.deploy();
+    await hardhatTicket.connect(addr1).mintTicket(21, {
+      from: addr1.address,
+      value: ethers.utils.parseEther("1.68"),
+    });
+    await network.provider.send("evm_increaseTime", [2 * 24 * 3600]);
+    await hardhatTicket.run(10000, 99999);
+  });
+
+  it("Check if supply dropped to even and correct number", async () => {
+    const totalSupply = await hardhatTicket.totalSupply();
+    assert(totalSupply.eq(BigNumber.from(10)));
+  })
+})
+
 describe("End Phase", async () => {
   beforeEach(async () => {
     // Get the ContractFactory and Signers here.
