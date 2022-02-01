@@ -53,7 +53,7 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
                     burn(_salt, _nonce, totalSupply.current() / 2);
                 } else {
                     uint256 numberToBurn = (totalSupply.current() - 1);
-                    burn(_salt, _nonce, numberToBurn + 1);
+                    burn(_salt, _nonce, (numberToBurn / 2) + 1);
                 }
             } else if (totalSupply.current() > 10) {
                 burn(_salt, _nonce, totalSupply.current() - 10);
