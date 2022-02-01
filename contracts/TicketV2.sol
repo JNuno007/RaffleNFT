@@ -22,12 +22,12 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
     mapping(uint256 => string) public winnerTokenURI;
     Counters.Counter private _tokenIds;
     Counters.Counter public totalSupply;
-    uint256 public ticketPrice = 0.08 ether; //0.08 ETH
+    uint256 public ticketPrice = 0.08 ether;
     uint256[] public ticketsInPlay;
     uint256 public prizeMoney;
     string public commonMetaData;
     string public winnerMetaData;
-    uint256 currentBlockStamp;
+    uint256 public currentBlockStamp;
     uint256 public timeInterval = 2 days;
     Stage currentStage;
 
