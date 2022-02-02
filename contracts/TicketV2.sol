@@ -133,6 +133,7 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
     }
 
     function setTimeInterval(uint256 interval) public onlyOwner {
+        currentBlockStamp = block.timestamp;
         timeInterval = interval;
     }
 

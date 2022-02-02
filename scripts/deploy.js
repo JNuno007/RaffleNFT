@@ -14,7 +14,7 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const RaffleNFT = await hre.ethers.getContractFactory("Ticket");
+  const RaffleNFT = await hre.ethers.getContractFactory("TicketV2");
   
   // Start deployment, returning a promise that resolves to a contract object
   const myNFT = await RaffleNFT.deploy()
