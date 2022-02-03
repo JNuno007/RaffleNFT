@@ -80,6 +80,7 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
     }
 
     function startRound() public onlyOwner {
+        require(currentStage == Stage.END, "You will have to wait for the round to end");
         currentStage = Stage.MINT;
         totalSupply.reset();
         delete ticketsInPlay;
@@ -133,6 +134,7 @@ contract TicketV2 is ERC721URIStorage, Ownable, PullPayment {
     }
 
     function setTimeInterval(uint256 interval) public onlyOwner {
+        currentBlockStamp = block.timestamp;
         timeInterval = interval;
     }
 

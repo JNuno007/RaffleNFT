@@ -6,14 +6,14 @@ require("@nomiclabs/hardhat-ethers");
 const { API_URL, PRIVATE_KEY, API_RINKEBY_URL, RINKEBY_PRIVATE_KEY } = process.env;
 module.exports = {
   solidity: "0.8.3",
-  defaultNetwork: "hardhat",
-  networks: {
-     hardhat: {},
-     // ropsten: {
-     //    url: API_URL,
-     //    accounts: [`0x${PRIVATE_KEY}`]
-     // }
-  },
+  // defaultNetwork: "hardhat",
+  // networks: {
+  //    hardhat: {},
+  //    // ropsten: {
+  //    //    url: API_URL,
+  //    //    accounts: [`0x${PRIVATE_KEY}`]
+  //    // }
+  // },
   // defaultNetwork: "ganache",
   // networks: {
   //   ganache: {
@@ -22,12 +22,12 @@ module.exports = {
   //     url: "http://localhost:7545"
   //   },
   // },
-//   defaultNetwork: "rinkeby",
-//   networks: {
-//      hardhat: {},
-//      rinkeby: {
-//         url: API_RINKEBY_URL,
-//         accounts: [`${RINKEBY_PRIVATE_KEY}`]
-//      }
-//   },
+  defaultNetwork: "rinkeby",
+  networks: {
+     hardhat: {},
+     rinkeby: {
+        url: API_RINKEBY_URL,
+        accounts: [`${RINKEBY_PRIVATE_KEY}`]
+     }
+  },
 };
