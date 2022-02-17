@@ -53,6 +53,7 @@ export default function ContractDetails(props) {
     setAddress(await ctrc.address);
     setcurrentState(await getCurrentState(ctrc));
     setTimeStamp(await getRunDate(ctrc));
+    console.log(await ctrc.winnerMetaData());
   };
 
   const mint = async () => {
@@ -100,7 +101,7 @@ export default function ContractDetails(props) {
   };
 
   const setWinnerMetadata = async () => {
-    const tx = await contract.setWinnerMetaData(tokenURI);
+    const tx = await contract.setWinnerMetaData(winnerTokenURI);
     setTxMessage(`Your transaction ${tx.hash} is to be confirmed... Please wait.`);
     const receipt = await tx.wait();
     console.log(receipt);
@@ -110,7 +111,7 @@ export default function ContractDetails(props) {
 
   const run = async () => {
     try {
-      const tx = await contract.run(await getNumber(), await getNumber());
+      const tx = await contract.run(await getNumber(), await getNumber(), { gasLimit: 25000000 });
       setTxMessage(`Your transaction ${tx.hash} is to be confirmed... Please wait.`);
       const receipt = await tx.wait();
       console.log(receipt);
